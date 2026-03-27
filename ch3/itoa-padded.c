@@ -6,15 +6,16 @@
 
 void reverse(char *s) {
 	int len = strlen(s);
-	for (int i = 0, j = len - 1; i < j; i++, j--) {
-		char tmp = s[i];
-		s[i] = s[j];
-		s[j] = tmp;
+	char *l = s, *r = s + len - 1;
+	while (l < r) {
+		char tmp = *l;
+		*l++ = *r;
+		*r-- = tmp;
 	}
 }
 
 /* itoa: convert n to characters in s */
-void myitoa(int n, char s[]) {
+void myitoa(int n, char s[], int minwidth) {
 	int i, sign;
 
 	i = 0;
@@ -37,21 +38,26 @@ void myitoa(int n, char s[]) {
 		d = n % 10;
 	} while ((n /= 10) > 0 || d > 0);
 	if (sign < 0) s[i++] = '-';
+	while (i < minwidth) s[i++] = ' ';
 	s[i] = '\0';
 	reverse(s);
 }
 
 void showitoa(int n) {
 	char *buffer = malloc((MAXLEN + 1) * sizeof(char));
-	myitoa(n, buffer);
+	myitoa(n, buffer, 8);
 	printf("n:%d\nASCII:%s\n", n, buffer);
 	free(buffer);
 }
 
 int main() {
 	printf("Convert integer to ASCII.\n");
-	showitoa(23647328);
-	showitoa(-23647328);
+	showitoa(93647328);
+	showitoa(-93647328);
+	showitoa(12345678);
+	showitoa(-2345678);
+	showitoa(2345678);
+	showitoa(-345678);
 	showitoa(67328);
 	showitoa(-12);
 	showitoa(-11);
