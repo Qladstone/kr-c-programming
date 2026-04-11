@@ -3,9 +3,12 @@
 #include <stdlib.h> /* for atof() */
 
 #define MAXOP 100 /* max size of operand or operator */
-#define NUMBER '0' /* signal that a number was found */
+#define INVALID '0' /* signal invalid operator */
+#define NUMBER '1' /* signal that a number was found */
 
+int getnext(char []);
 int getop(char []);
+int getnum(char []);
 void push(double);
 double pop(void);
 double peek(void); /* unused */
@@ -18,7 +21,7 @@ int main() {
 	char s[MAXOP];
 
 	printf("Enter expression:\t");
-	while ((type = getop(s)) != EOF) {
+	while ((type = getnext(s)) != EOF) {
 		switch (type) {
 			case NUMBER:
 				push(atof(s));
@@ -103,14 +106,31 @@ void clear(void) {
 char getch(void);
 void ungetch(char);
 
-/* getop: get next operator or numeric operand */
+/* getnext: get next operator or numeric operand */
+int getnext(char s[]) {
+	char c;
+	while ((c = getch()) == ' ' || c == '\t');
+	if (c == '\n') return c;
+	ungetch(c);
+	if (isdigit(c) || c == '.') return getnum(s);
+	else return getop(s);
+}
+
+/* getop: get next operator */
 int getop(char s[]) {
+	char c;
+	int i = 0;
+	while ((s[i++] = c = getch()) != ' ' && c != '\t' && c != '\n');
+	s[i] = '\0';
+	if (c != EOF) ungetch(c);
+	return s[0];
+}
+
+/* getnum: get next numeric operand */
+int getnum(char s[]) {
 	int i, c;
-	while ((s[0] = c = getch()) == ' ' || c == '\t');
+	s[i = 0] = c = getch();
 	s[1] = '\0';
-	if (!isdigit(c) && c != '.')
-		return c; /* not a number */
-	i = 0;
 	if (isdigit(c)) /* collect integer part */
 		while (isdigit(s[++i] = c = getch()));
 	if (c == '.') /* collect fraction part */
