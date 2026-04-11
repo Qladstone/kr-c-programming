@@ -1,3 +1,4 @@
+#include <math.h> /* for fmod */
 #include <stdio.h>
 #include <stdlib.h> /* for atof() */
 
@@ -7,6 +8,8 @@
 int getop(char []);
 void push(double);
 double pop(void);
+double peek(void); /* unused */
+void clear(void);
 
 /* reverse Polish calculator */
 int main() {
@@ -35,10 +38,18 @@ int main() {
 				if (op2 != 0.0)
 					push(pop() / op2);
 				else
-					printf("error: zero divisor\n");
+					printf("error: zero divisor for division operation\n");
+				break;
+			case '%':
+				op2 = pop();
+				if (op2 != 0.0)
+					push(fmod(pop(), op2));
+				else
+					printf("error: zero divisor for modulo operation\n");
 				break;
 			case '\n':
 				printf("Result:\t%.8g\n", pop());
+				clear();
 				printf("Enter expression:\t");
 				break;
 			default:
@@ -70,6 +81,21 @@ double pop(void) {
 		printf("error: stack empty\n");
 		return 0.0;
 	}
+}
+
+/* peek: returns the top values from the stack without removing it */
+double peek(void) {
+	if (sp > 0)
+		return val[sp];
+	else {
+		printf("error: stack empty\n");
+		return 0.0;
+	}
+}
+
+/* clear: clears all values on the stack */
+void clear(void) {
+	sp = 0;
 }
 
 #include <ctype.h>
