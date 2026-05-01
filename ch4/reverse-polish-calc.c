@@ -1,10 +1,16 @@
-#include <math.h> /* for fmod */
+#include <math.h> /* for fmod and other mathematical functions */
 #include <stdio.h>
 #include <stdlib.h> /* for atof() */
+#include <string.h> /* for strcmp() */
 
 #define MAXOP 100 /* max size of operand or operator */
 #define INVALID '0' /* signal invalid operator */
 #define NUMBER '1' /* signal that a number was found */
+#define SIN '2'
+#define COS '3'
+#define TAN '4'
+#define EXP '5'
+#define POW '6'
 
 int getnext(char []);
 int getop(char []);
@@ -50,6 +56,23 @@ int main() {
 				else
 					printf("error: zero divisor for modulo operation\n");
 				break;
+			case SIN:
+				push(sin(pop()));
+				break;
+			case COS:
+				push(cos(pop()));
+				break;
+			case TAN:
+				push(tan(pop()));
+				break;
+			case EXP:
+				push(exp(pop()));
+				break;
+			case POW:
+				op2 = pop();
+				push(pow(pop(), op2));
+				break;
+
 			case '\n':
 				printf("Result:\t%.8g\n", pop());
 				clear();
@@ -121,8 +144,13 @@ int getop(char s[]) {
 	char c;
 	int i = 0;
 	while ((s[i++] = c = getch()) != ' ' && c != '\t' && c != '\n');
-	s[i] = '\0';
-	if (c != EOF) ungetch(c);
+	s[i - 1] = '\0';
+	ungetch(c);
+	if (strcmp(s, "sin") == 0) return SIN;
+	if (strcmp(s, "cos") == 0) return COS;
+	if (strcmp(s, "tan") == 0) return TAN;
+	if (strcmp(s, "exp") == 0) return EXP;
+	if (strcmp(s, "pow") == 0) return POW;
 	return s[0];
 }
 
@@ -136,8 +164,7 @@ int getnum(char s[]) {
 	if (c == '.') /* collect fraction part */
 		while (isdigit(s[++i] = c = getch()));
 	s[i] = '\0';
-	if (c != EOF)
-		ungetch(c);
+	ungetch(c);
 	return NUMBER;
 }
 
