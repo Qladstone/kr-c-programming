@@ -11,6 +11,10 @@
 #define TAN '4'
 #define EXP '5'
 #define POW '6'
+#define VAR '7'
+
+#define VARCOUNT 26
+#define NOTVAR '\0'
 
 int getnext(char []);
 int getop(char []);
@@ -18,12 +22,18 @@ int getnum(char []);
 void push(double);
 double pop(void);
 double peek(void); /* unused */
-void clear(void);
+void clear(void); /* unused */
+void pushvar(char);
+char popvar(void);
+char peekvar(void); /* unused */
+void clearvar(void); /* unused */
+
+double vars[VARCOUNT] = {0};
 
 /* reverse Polish calculator */
 int main() {
 	int type;
-	double op2;
+	double op1, op2;
 	char s[MAXOP];
 
 	printf("Enter expression:\t");
@@ -31,30 +41,65 @@ int main() {
 		switch (type) {
 			case NUMBER:
 				push(atof(s));
+				pushvar(NOTVAR);
+				break;
+			case VAR:
+				push(vars[s[0] - 'a']);
+				pushvar(s[0]);
 				break;
 			case '+':
 				push(pop() + pop());
+				popvar();
+				popvar();
+				pushvar(NOTVAR);
 				break;
 			case '*':
 				push(pop() * pop());
+				popvar();
+				popvar();
+				pushvar(NOTVAR);
 				break;
 			case '-':
 				op2 = pop();
 				push(pop() - op2);
+				popvar();
+				popvar();
+				pushvar(NOTVAR);
 				break;
 			case '/':
 				op2 = pop();
-				if (op2 != 0.0)
+				popvar();
+				if (op2 != 0.0) {
 					push(pop() / op2);
-				else
+					popvar();
+					pushvar(NOTVAR);
+				} else
 					printf("error: zero divisor for division operation\n");
 				break;
 			case '%':
 				op2 = pop();
-				if (op2 != 0.0)
+				popvar();
+				if (op2 != 0.0) {
 					push(fmod(pop(), op2));
-				else
+					popvar();
+					pushvar(NOTVAR);
+				} else
 					printf("error: zero divisor for modulo operation\n");
+				break;
+			case '=':
+				op2 = pop();
+				op1 = pop();
+				popvar();
+				char c = popvar();
+				if (c == NOTVAR) {
+					push(op1);
+					pushvar(NOTVAR);
+				}
+				else {
+					vars[c - 'a'] = op2; /* assign value of op2 to the variable */
+					push(vars[c - 'a']);
+					pushvar(NOTVAR);
+				}
 				break;
 			case SIN:
 				push(sin(pop()));
@@ -112,7 +157,7 @@ double pop(void) {
 /* peek: returns the top values from the stack without removing it */
 double peek(void) {
 	if (sp > 0)
-		return val[sp];
+		return val[sp - 1];
 	else {
 		printf("error: stack empty\n");
 		return 0.0;
@@ -122,6 +167,38 @@ double peek(void) {
 /* clear: clears all values on the stack */
 void clear(void) {
 	sp = 0;
+}
+
+int varsp = 0; /* next free stack position */
+char var[MAXVAL]; /* var stack */
+
+void pushvar(char c) {
+	if (varsp < MAXVAL)
+		var[varsp++] = c;
+	else 
+		printf("error: var stack full, can't push %c\n", c);
+}
+
+char popvar(void) {
+	if (varsp > 0)
+		return var[--varsp];
+	else {
+		printf("error: var stack empty\n");
+		return NOTVAR;
+	}
+}
+
+char peekvar(void) {
+	if (varsp > 0)
+		return var[varsp - 1];
+	else {
+		printf("error: var stack empty:\n");
+		return NOTVAR;
+	}
+}
+
+void clearvar(void) {
+	varsp = 0;
 }
 
 #include <ctype.h>
@@ -151,6 +228,7 @@ int getop(char s[]) {
 	if (strcmp(s, "tan") == 0) return TAN;
 	if (strcmp(s, "exp") == 0) return EXP;
 	if (strcmp(s, "pow") == 0) return POW;
+	if (s[1] == '\0' && 'a' <= s[0] && s[0] <= 'z') return VAR;
 	return s[0];
 }
 
