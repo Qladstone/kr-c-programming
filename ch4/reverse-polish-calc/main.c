@@ -12,20 +12,24 @@ int main() {
 	while ((type = getop(s)) != EOF) {
 		switch (type) {
 			case NUMBER:
-				printf("received number: %.8g\n", atof(s));
 				push(atof(s));
 				break;
 			case '+':
-				printf("received operator: +\n");
+				push(pop() + pop());
 				break;
 			case '*':
-				printf("received operator: *\n");
+				push(pop() * pop());
 				break;
 			case '-':
-				printf("received operator: -\n");
+				op2 = pop();
+				push(pop() - op2);
 				break;
 			case '/':
-				printf("received operator: /\n");
+				op2 = pop();
+				if (op2 != 0.0)
+					push(pop() / op2);
+				else
+					printf("error: zero divisor\n");
 				break;
 			case '\n':
 				printf("\t%.8g\n", pop());
