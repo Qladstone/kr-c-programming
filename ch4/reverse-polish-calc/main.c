@@ -13,6 +13,7 @@ int main() {
 		switch (type) {
 			case NUMBER:
 				printf("received number: %.8g\n", atof(s));
+				push(atof(s));
 				break;
 			case '+':
 				printf("received operator: +\n");
@@ -27,7 +28,7 @@ int main() {
 				printf("received operator: /\n");
 				break;
 			case '\n':
-				printf("\tend of line.\n");
+				printf("\t%.8g\n", pop());
 				break;
 			default:
 				printf("error: unknown command %s\n", s);
